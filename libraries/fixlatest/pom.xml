@@ -1,5 +1,5 @@
 <!--
-  Copyright 2015 Philadelphia authors
+  Copyright 2020 Philadelphia authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,30 +24,8 @@
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>philadelphia-core</artifactId>
+  <artifactId>philadelphia-fixlatest</artifactId>
 
-  <name>Philadelphia Core</name>
-
-  <dependencies>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>philadelphia-fix42</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-    </dependency>
-  </dependencies>
+  <name>Philadelphia FIX Latest</name>
 
 </project>

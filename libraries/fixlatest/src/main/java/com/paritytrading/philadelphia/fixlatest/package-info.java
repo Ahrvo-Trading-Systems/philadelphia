@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Philadelphia authors
+ * Copyright 2020 Philadelphia authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.paritytrading.philadelphia;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.joda.time.MutableDateTime;
-import org.junit.jupiter.api.Test;
-
-class FIXTimestampsTest {
-
-    @Test
-    void append() {
-        MutableDateTime timestamp = new MutableDateTime(2015, 9, 1, 9, 30, 5, 250);
-
-        StringBuilder builder = new StringBuilder();
-
-        FIXTimestamps.append(timestamp, builder);
-
-        assertEquals("20150901-09:30:05.250", builder.toString());
-    }
-
-}
+/**
+ * Constants for FIX Latest.
+ */
+package com.paritytrading.philadelphia.fixlatest;

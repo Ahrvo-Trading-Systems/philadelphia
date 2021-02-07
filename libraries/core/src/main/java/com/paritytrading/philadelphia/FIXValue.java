@@ -53,6 +53,8 @@ public class FIXValue {
 
     private final byte[] bytes;
 
+    private final int end;
+
     private int offset;
     private int length;
 
@@ -63,6 +65,8 @@ public class FIXValue {
      */
     public FIXValue(int capacity) {
         bytes = new byte[capacity];
+
+        end = capacity;
 
         bytes[0] = SOH;
 
@@ -161,14 +165,14 @@ public class FIXValue {
     }
 
     /**
-     * Copy the value to a byte array.
+     * Copy the value to a destination byte array.
      *
-     * @param bytes a byte array
+     * @param dst a destination byte array
      * @throws IndexOutOfBoundsException if the length of the value is greater
-     *     than the length of the byte array
+     *     than the length of the destination byte array
      */
-    public void copyTo(byte[] bytes) {
-        System.arraycopy(this.bytes, this.offset, bytes, 0, this.length);
+    public void copyTo(byte[] dst) {
+        System.arraycopy(bytes, offset, dst, 0, length);
     }
 
     /**
@@ -279,23 +283,40 @@ public class FIXValue {
      * @param x an integer
      */
     public void setInt(long x) {
-        bytes[bytes.length - 1] = SOH;
+        if (x < 0) {
+            setNegativeInt(x);
+            return;
+        }
 
-        long y = Math.abs(x);
+        int i = end;
 
-        int i = bytes.length - 2;
+        bytes[--i] = SOH;
 
         do {
-            bytes[i--] = (byte)('0' + y % 10);
+            bytes[--i] = (byte)('0' + x % 10);
 
-            y /= 10;
-        } while (y > 0);
+            x /= 10;
+        } while (x > 0);
 
-        if (x < 0)
-            bytes[i--] = '-';
+        offset = i;
+        length = end - offset - 1;
+    }
 
-        offset = i + 1;
-        length = bytes.length - 1 - offset;
+    private void setNegativeInt(long x) {
+        int i = end;
+
+        bytes[--i] = SOH;
+
+        do {
+            bytes[--i] = (byte)('0' - x % 10);
+
+            x /= 10;
+        } while (x < 0);
+
+        bytes[--i] = '-';
+
+        offset = i;
+        length = end - offset - 1;
     }
 
     /**
@@ -319,7 +340,7 @@ public class FIXValue {
      *
      * and
      *
-     *     -22&nbsp;&le;&nbsp;<i>e</i>&nbsp;&le;&nbsp;22.</p>
+     *     -17&nbsp;&le;&nbsp;<i>e</i>&nbsp;&le;&nbsp;2.</p>
      *
      * @return the value as a float
      * @throws FIXValueFormatException if the value is not a float
@@ -378,32 +399,62 @@ public class FIXValue {
      * @see #asFloat
      */
     public void setFloat(double x, int decimals) {
-        bytes[bytes.length - 1] = SOH;
+        if (x < 0.0) {
+            setNegativeFloat(x, decimals);
+            return;
+        }
 
-        long y = Math.round(POWERS_OF_TEN[decimals] * Math.abs(x));
+        int i = end;
 
-        int i = bytes.length - 2;
+        bytes[--i] = SOH;
+
+        long y = Math.round(POWERS_OF_TEN[decimals] * x);
 
         for (int j = 0; j < decimals; j++) {
-            bytes[i--] = (byte)('0' + y % 10);
+            bytes[--i] = (byte)('0' + y % 10);
 
             y /= 10;
         }
 
         if (decimals > 0)
-            bytes[i--] = '.';
+            bytes[--i] = '.';
 
         do {
-            bytes[i--] = (byte)('0' + y % 10);
+            bytes[--i] = (byte)('0' + y % 10);
 
             y /= 10;
         } while (y > 0);
 
-        if (x < 0)
-            bytes[i--] = '-';
+        offset = i;
+        length = end - offset - 1;
+    }
 
-        offset = i + 1;
-        length = bytes.length - 1 - offset;
+    private void setNegativeFloat(double x, int decimals) {
+        int i = end;
+
+        bytes[--i] = SOH;
+
+        long y = Math.round(POWERS_OF_TEN[decimals] * -x);
+
+        for (int j = 0; j < decimals; j++) {
+            bytes[--i] = (byte)('0' + y % 10);
+
+            y /= 10;
+        }
+
+        if (decimals > 0)
+            bytes[--i] = '.';
+
+        do {
+            bytes[--i] = (byte)('0' + y % 10);
+
+            y /= 10;
+        } while (y > 0);
+
+        bytes[--i] = '-';
+
+        offset = i;
+        length = end - offset - 1;
     }
 
     /**
@@ -641,7 +692,7 @@ public class FIXValue {
             if (b == SOH)
                 return true;
 
-            if (++length == bytes.length)
+            if (++length == end)
                 tooLongValue();
         }
 
@@ -669,22 +720,7 @@ public class FIXValue {
      */
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-
-        toString(builder);
-
-        return builder.toString();
-    }
-
-    /**
-     * Appends a string representation of this value to the specified string
-     * builder.
-     *
-     * @param builder a string builder
-     */
-    public void toString(StringBuilder builder) {
-        asString(builder);
-        builder.append('|');
+        return asString();
     }
 
     private int getDigits(int digits, int offset) {
